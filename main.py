@@ -28,7 +28,8 @@ class DBSCAN:
         distances = []
         core_points = []
         for point_index in range(sample.shape[0]):
-            # print('pointbreak ')
+            if point_index % 10 == 0:
+                print('pointbreak at ', point_index + start_index)
             point = sample[point_index,:]
             distances = np.sqrt(np.sum((self.features - point)**2,axis=1))
             # print(np.argwhere(distances <= self.eps).shape[0])
