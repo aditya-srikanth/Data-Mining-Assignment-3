@@ -1,1 +1,3 @@
 creditcardfraud/
+.vscode/
+__pycache__
