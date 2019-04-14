@@ -37,7 +37,7 @@ def label(points):
 	Pointer[index]=(point, neighbourhood)
 
 	core_pt: A dictionary which takes in an index key to gice the corresponding value, a tuple of the corresponding point and whether it has been visited or not
-	core_pt[index]=(point, visited, index)
+	core_pt[index]=[point, visited, index]
 
 	border_pt: A dictionary which takes in an index key to gice the corresponding value, a tuple of the corresponding point and whether it has been visited or not
 	border_pt[index]=(point, visited)
@@ -54,17 +54,17 @@ def label(points):
 
 	pointer=OrderedDict()
 	visited=OrderedDict()
+	visited={k: 0 for k in range(0,2001)}
 
 	count=0
 	neighbourhood=[]
 
 	for index, point in enumerate(points):
 		#print(i)
-		visited[index]=1
 		for j, distance_pt in enumerate(points):#if distance_pt!=point
 			#print(j)
 
-			if distances(point, distance_pt) <eps and j not in visited.keys():
+			if distances(point, distance_pt) <eps:
 				count+=1
 				neighbourhood.append([distance_pt, j, 0]) #(neighbourhood point, index, visited)
 
@@ -76,30 +76,43 @@ def label(points):
 		neighbourhood=[]
 		if count>minPts:
 			core_pt[index]=[point,0, index]
+			visited[index]=1
 
 		count=0
+	print(len(visited))
 
+	for index in core_pt.keys():
+		for neighbourhood_pts in pointer[index][1]:
+			if neighbourhood_pts[1] not in core_pt.keys() and visited[neighbourhood_pts[1]]==0: #not in visited.keys():
+				border_pt[neighbourhood_pts[1]]=[neighbourhood_pts[0] ,0, index]
+				visited[neighbourhood_pts[1]]=1
+
+	"""
 	for index, point in enumerate(points):
 		#print(i)
 		if index not in visited.keys():
 			no_core_pts=0
 			visited[index]=1
-			for j, distance_pt in enumerate(points):#if distance_pt!=point
+			for j in core_pt.keys():#if distance_pt!=point
+				print('yo')
 				#print(j)	
-				if distances(point, distance_pt) <eps:
-					count+=1
-					if j in core_pt.keys():
-						no_core_pts+=1
+				if distances(point, core_pt[j][0]) <eps:
+					border_pt[index]=[point,0, index]
+					visited[index]=1
+					break
+					no_core_pts+=1
 					#neighbourhood.append([distance_pt, j, 0]) #(neighbourhood point, index, visited)
 
-			
-			if count<minPts and no_core_pts>0:
-				border_pt[index]=[point,0, index]
-			elif index not in core_pt.keys() and no_core_pts==0:
-				noise_pt[index]=[point,0, index]
+			"""
+			#if count<minPts and no_core_pts>0:
+			#	border_pt[index]=[point,0, index]
+			#elif index not in core_pt.keys() and no_core_pts==0:
+			#	noise_pt[index]=[point,0, index]
+	"""
 			#else:
 			#	print(index, "nooo")
 			count=0
+	"""
 
 	return core_pt, border_pt, noise_pt, pointer
 
