@@ -6,7 +6,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 from collections import OrderedDict
 
-dataset=pd.read_csv('/home/user/Projects/Prateek_Projects/creditcardfraud/creditcard.csv')
+from time import time
+
+dataset=pd.read_csv('./creditcardfraud/creditcard.csv')
 #print(dataset.head())
 data=dataset.values
 X=data[:2000,:30]
