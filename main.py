@@ -99,8 +99,9 @@ class DBSCAN:
         self.features = []
         self.labels = []
         self.features,self.labels = process_dataset(file_path,file_name)
-        size = 10000
-        self.features,self.labels = self.features[:size,:],self.labels[:size]
+        # limit the size of the dataset
+        # size = 100000
+        # self.features,self.labels = self.features[:size,:],self.labels[:size]
         print('features: \n',self.features.shape)
         try:
             sa.delete("shm://features")
@@ -241,7 +242,7 @@ class DBSCAN:
             visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point))
         for point in self.border_points:
             visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point)) 
-        visuals.outlier_plot(save_path=str(DBSCAN.eps)+str(DBSCAN.minpts))           
+        visuals.outlier_plot(save_path="eps_"+str(DBSCAN.eps)+"_minpts_"+str(DBSCAN.minpts))           
     
     def print_accuracy_score(self):
         accuracy = 0
