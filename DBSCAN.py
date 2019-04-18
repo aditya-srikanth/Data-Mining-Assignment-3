@@ -5,13 +5,14 @@ import os
 from sklearn.preprocessing import MinMaxScaler 
 from sklearn.preprocessing import StandardScaler
 from collections import OrderedDict
-
+from sklearn.metrics import accuracy_score
 from time import time
 
-dataset=pd.read_csv('./creditcardfraud/creditcard.csv')
+dataset=pd.read_csv('/home/user/Projects/Prateek_Projects/creditcardfraud/creditcard.csv')
 #print(dataset.head())
 data=dataset.values
-X=data[:2000,:30]
+data=data[:5000,:]
+X=data[:,:30]
 y=data[:,30]
 #print(X[0])
 
@@ -32,6 +33,7 @@ def distances(point1, point2):
 
 
 def label(points):
+	p=1
 	'''
 	Each point is labelled as a core point, border point or a Noise point
 
@@ -56,7 +58,7 @@ def label(points):
 
 	pointer=OrderedDict()
 	visited=OrderedDict()
-	visited={k: 0 for k in range(0,2001)}
+	visited={k: 1 for k in range(0,2000)}
 
 	count=0
 	neighbourhood=[]
@@ -78,16 +80,20 @@ def label(points):
 		neighbourhood=[]
 		if count>minPts:
 			core_pt[index]=[point,0, index]
-			visited[index]=1
+			visited[index]=0
+			print(p)
+			p=p+1
 
 		count=0
 	print(len(visited))
 
 	for index in core_pt.keys():
 		for neighbourhood_pts in pointer[index][1]:
-			if neighbourhood_pts[1] not in core_pt.keys() and visited[neighbourhood_pts[1]]==0: #not in visited.keys():
+			if neighbourhood_pts[1] not in core_pt.keys() and visited[neighbourhood_pts[1]]==1: #not in visited.keys():
 				border_pt[neighbourhood_pts[1]]=[neighbourhood_pts[0] ,0, index]
-				visited[neighbourhood_pts[1]]=1
+				visited[neighbourhood_pts[1]]=0
+				print(p)
+				p=p+1
 
 	"""
 	for index, point in enumerate(points):
@@ -116,14 +122,17 @@ def label(points):
 			count=0
 	"""
 
-	return core_pt, border_pt, noise_pt, pointer
+	return core_pt, border_pt, noise_pt, pointer, visited
 
-core_point, border_point, noise_point, Pointer =label(X_scaled)
+core_point, border_point, noise_point, Pointer, Visited =label(X_scaled)
 print(len(core_point), len(border_point), len(noise_point), len(Pointer))
+y_pred=list(Visited.values())
+
+print(accuracy_score(y,y_pred))
 #For given eps and minPts, the algorithm prints (1727 218 55)
 #print('Core point= ',X_scaled[77], 'Pointer= ',pointer[77][0])
 
-
+"""
 def Density_Edges(core_pt, border_pt):
 	final_Cluster=[]
 	Cluster=[]
@@ -187,3 +196,4 @@ for single_cluster in final:
 	sum+=len(single_cluster)
 
 print(sum)
+"""
