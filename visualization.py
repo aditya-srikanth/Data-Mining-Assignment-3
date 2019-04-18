@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 
 class Visualization:
     """
@@ -52,7 +53,7 @@ class Visualization:
 
         return reduced_point
 
-    def outlier_plot(self):
+    def outlier_plot(self,save_path=None):
         """
         This mehtod takes the points marked as outliers and non-outliers and plots them as
         a scatter plot.
@@ -67,4 +68,29 @@ class Visualization:
             plt.scatter(element[0], element[1], facecolors='none', edgecolors='b', marker = 'o')
 
         plt.xlabel("K = " + str(self.K))
-        plt.show()
+        if save_path != None:
+            plt.savefig(save_path+'.png')
+        else:
+            plt.show()
+    
+    def outlier_plot_numpy(self,save_path=None):
+        """
+        This mehtod takes the points marked as outliers and non-outliers and plots them as
+        a scatter plot.
+        Returns
+        -------
+        None
+            The result of this method is a matplotlib scatter plot.
+        """
+        self.OUTLIERS = np.array(self.OUTLIERS)
+        self.NON_OUTLIERS = np.array(self.NON_OUTLIERS)
+
+        plt.scatter(self.OUTLIERS[:,0],self.OUTLIERS[:,0], facecolors='none', edgecolors='r', marker='o')
+        for element in self.NON_OUTLIERS:
+            plt.scatter(self.NON_OUTLIERS[:,0], self.NON_OUTLIERS[:,1], facecolors='none', edgecolors='b', marker = 'o')
+
+        plt.xlabel("K = " + str(self.K))
+        if save_path != None:
+            plt.savefig(save_path+'.png')
+        else:
+            plt.show()

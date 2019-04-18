@@ -59,4 +59,6 @@ All the predicted outliers are well separated from the normal points, with the o
 in blue.
 
 ## Author
-![Naren Surampudi](https://github.com/nsurampu/)
+Naren Surampudi (https://github.com/nsurampu/)
+<br>V Aditya Srikanth (https://github.com/aditya-srikanth/)
+<br>Prateek Dasgupta (https://github.com/fill-your-username-here)

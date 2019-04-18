@@ -100,8 +100,8 @@ class DBSCAN:
         self.labels = []
         self.features,self.labels = process_dataset(file_path,file_name)
         # limit the size of the dataset
-        # size = 100000
-        # self.features,self.labels = self.features[:size,:],self.labels[:size]
+        size = 10000
+        self.features,self.labels = self.features[:size,:],self.labels[:size]
         print('features: \n',self.features.shape)
         try:
             sa.delete("shm://features")
@@ -231,7 +231,7 @@ class DBSCAN:
         print("deleting shared memory")
         sa.delete("shm://features")
         sa.delete("shm://core_points")
-        return self.noise_points
+        return self.noise_points,core_point_end_time - core_point_start_time,border_point_end_time - border_point_start_time,time.time() - start_time
     
     
     def plot(self):
@@ -243,7 +243,7 @@ class DBSCAN:
         for point in self.border_points:
             visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point)) 
         visuals.outlier_plot(save_path="eps_"+str(DBSCAN.eps)+"_minpts_"+str(DBSCAN.minpts))           
-    
+
     def print_accuracy_score(self):
         accuracy = 0
         for point in self.noise_index:
@@ -270,5 +270,6 @@ if __name__ == "__main__":
             # with open('noise.txt','w') as f:
             #     for noise_point in outliers:
             #         print(noise_point,file=f)
+            print('accuracy at minpts: ',minpts,' and eps = ',eps)
             test.print_accuracy_score()
             test.plot() 
