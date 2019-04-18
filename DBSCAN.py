@@ -11,7 +11,8 @@ from time import time
 dataset=pd.read_csv('/home/user/Projects/Prateek_Projects/creditcardfraud/creditcard.csv')
 #print(dataset.head())
 data=dataset.values
-data=data[:5000,:]
+test=5000
+data=data[:test,:]
 X=data[:,:30]
 y=data[:,30]
 #print(X[0])
@@ -58,7 +59,7 @@ def label(points):
 
 	pointer=OrderedDict()
 	visited=OrderedDict()
-	visited={k: 1 for k in range(0,2000)}
+	visited={k: 1 for k in range(0,test)}
 
 	count=0
 	neighbourhood=[]
