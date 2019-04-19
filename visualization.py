@@ -82,14 +82,15 @@ class Visualization:
         None
             The result of this method is a matplotlib scatter plot.
         """
-        self.OUTLIERS = np.array(self.OUTLIERS)
-        self.NON_OUTLIERS = np.array(self.NON_OUTLIERS)
-
-        plt.scatter(self.OUTLIERS[:,0],self.OUTLIERS[:,0], facecolors='none', edgecolors='r', marker='o')
-        for element in self.NON_OUTLIERS:
+        if len(self.OUTLIERS) > 0:
+            self.OUTLIERS = np.array(self.OUTLIERS)
+            plt.scatter(self.OUTLIERS[:,0],self.OUTLIERS[:,0], facecolors='none', edgecolors='r', marker='o')
+        
+        if len(self.NON_OUTLIERS) > 0:
+            self.NON_OUTLIERS = np.array(self.NON_OUTLIERS)
             plt.scatter(self.NON_OUTLIERS[:,0], self.NON_OUTLIERS[:,1], facecolors='none', edgecolors='b', marker = 'o')
 
-        plt.xlabel("K = " + str(self.K))
+        # plt.xlabel("K = " + str(self.K))
         if save_path != None:
             plt.savefig(save_path+'.png')
         else:

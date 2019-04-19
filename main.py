@@ -11,21 +11,11 @@ from sklearn.metrics import accuracy_score
 import visualization 
 from preprocess_dataset import process_dataset
 
-# minpts = 10
-
-# eps = 5
-# eps = 6
-# eps = 7
-# eps = 8
-# eps = 9
-# eps = 10
-# eps = 15
-# eps = 25
-# eps = 50
-# eps = 100
-
 
 def find_core_points(indices):
+        params = sa.attach('shm://params')
+        eps = params[0]
+        minpts = params[1]
         features = sa.attach("shm://features")
         start_index = indices[0]
         end_index = indices[1]
@@ -40,8 +30,8 @@ def find_core_points(indices):
                 gc.collect()
             point = sample[point_index,:]
             distances = np.sqrt(np.sum((features - point)**2,axis=1))
-            candidates = np.argwhere(distances <= DBSCAN.eps)
-            if candidates.shape[0] > DBSCAN.minpts:
+            candidates = np.argwhere(distances <= eps)
+            if candidates.shape[0] > minpts:
                 core_points.append(start_index + point_index)
                 # nearest_neighbours[start_index+point_index] = set(list(candidates.flatten()))
         print('core point search complete, exiting: ',start_index,end_index,'\n\n')
@@ -57,6 +47,9 @@ def find_core_points(indices):
 
 
 def find_border_points(indices):
+        params = sa.attach('shm://params')
+        eps = params[0]
+        minpts = params[1]
         features = sa.attach("shm://features")
         core_points_index = sa.attach("shm://core_points")
         start_index = indices[0]
@@ -74,7 +67,7 @@ def find_border_points(indices):
                 print(start_index," collecting garbage, at index: ",point_index,' remaining indices: ',sample.shape[0] - point_index)
             point = sample[point_index,:]
             distances = np.sqrt(np.sum((features - point)**2,axis=1))
-            candidates = np.argwhere(distances <= DBSCAN.eps) + start_index
+            candidates = np.argwhere(distances <= eps) + start_index
             # if it is not a core point and is in the vicinity of a core point
             if np.intersect1d(candidates,core_points_index).shape[0] >= 1 and not (start_index + point_index) in core_points_index:
                 border_points.append(start_index + point_index)
@@ -87,6 +80,7 @@ class DBSCAN:
     eps = 0
     minpts = 0
     def __init__(self,file_path,file_name):
+        print('class',DBSCAN.eps,DBSCAN.minpts)
         self.core_points = []
         self.core_point_labels = []
         self.core_points_index = []
@@ -98,8 +92,7 @@ class DBSCAN:
         self.n_threads = cpu_count()
         self.features = []
         self.labels = []
-        self.features,self.labels = process_dataset(file_path,file_name)
-        # limit the size of the dataset
+        self.features,self.labels = process_dataset(file_path,file_name)        # limit the size of the dataset
         size = 10000
         self.features,self.labels = self.features[:size,:],self.labels[:size]
         print('features: \n',self.features.shape)
@@ -235,16 +228,19 @@ class DBSCAN:
     
     
     def plot(self):
+        params = sa.attach('shm://params')
+        eps = params[0]
+        minpts = params[1]
         visuals = visualization.Visualization()
         for point in self.noise_points:
             visuals.OUTLIERS.append(visuals.dimension_reduction(point))
         for point in self.core_points:
             visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point))
         for point in self.border_points:
-            visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point)) 
-        visuals.outlier_plot(save_path="eps_"+str(DBSCAN.eps)+"_minpts_"+str(DBSCAN.minpts))           
+            visuals.NON_OUTLIERS.append(visuals.dimension_reduction(point))
+        visuals.outlier_plot_numpy(save_path="./dbscan_plots/eps_"+str(eps)+"_minpts_"+str(minpts))           
 
-    def print_accuracy_score(self):
+    def print_accuracy_score(self,redirect = None):
         accuracy = 0
         for point in self.noise_index:
             if self.labels[point] == 1:
@@ -253,23 +249,32 @@ class DBSCAN:
         for point in cluster_points:
             if self.labels[point] == 0:
                 accuracy += 1
-        print('accuracy: \n',accuracy / self.features.shape[0] * 100,"%")
-
+        if redirect == None:
+            print('accuracy: \n',accuracy / self.features.shape[0] * 100,"%")
+        else:
+            print('accuracy: \n',accuracy / self.features.shape[0] * 100,"%")
+            print('accuracy: \n',accuracy / self.features.shape[0] * 100,"%",file=f)
+            
 if __name__ == "__main__":
     # eps = int(input('enter eps\n'))
     # minpts = int(input('enter minpts\n'))
-    
-    for eps in range(1,20,5):
-        for minpts in range(1,20,5):
-            DBSCAN.eps = eps 
-            DBSCAN.minpts = minpts 
-            
-            test = DBSCAN("creditcardfraud","creditcard.csv")
-            outliers = test.fit()
-            print('number of outliers are: ',len(outliers))
-            # with open('noise.txt','w') as f:
-            #     for noise_point in outliers:
-            #         print(noise_point,file=f)
-            print('accuracy at minpts: ',minpts,' and eps = ',eps)
-            test.print_accuracy_score()
-            test.plot() 
+    try:
+        sa.delete("shm://params")
+    except Exception as e:
+        print('params to be created')
+    params = sa.create("shm://params",(2,))
+    with open('stats.txt','w') as f:
+        print("stats: minpts, eps time for core points, time for border points, total time\n",file=f,flush=True)
+        for eps in range(0,20,5):
+            for minpts in range(0,20,5):
+                params[0] = eps 
+                params[1] = minpts
+                print('params',params)
+                test = DBSCAN("creditcardfraud","creditcard.csv")
+                outliers,core_time,border_time,total_time = test.fit()
+                print('number of outliers are: ',len(outliers))
+                print(str(minpts) +',' + str(eps) + ',' + str(core_time)+','+str(border_time)+','+str(total_time)+'\n',file=f,flush=True)
+                print('accuracy at minpts: ',minpts,' and eps = ',eps)
+                test.print_accuracy_score(f)
+                test.plot() 
+    sa.delete('shm://params')
