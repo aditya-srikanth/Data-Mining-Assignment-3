@@ -11,7 +11,7 @@ from time import time
 dataset=pd.read_csv('/home/user/Projects/Prateek_Projects/creditcardfraud/creditcard.csv')
 #print(dataset.head())
 data=dataset.values
-test=5000
+test=2000
 data=data[:test,:]
 X=data[:,:30]
 y=data[:,30]
